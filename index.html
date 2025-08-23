@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download App</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #121212; color: #ffffff; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; text-align: center; padding: 20px; }
+        .container { background-color: #1E1E1E; padding: 40px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); max-width: 500px; }
+        .title { font-size: 2em; margin-bottom: 10px; }
+        .version-text { font-size: 1.2em; color: #AAAAAA; margin-bottom: 30px; }
+        .download-button { display: inline-block; background-color: #E50914; color: #ffffff; padding: 15px 30px; font-size: 1.5em; text-decoration: none; border-radius: 8px; font-weight: bold; transition: transform 0.2s; }
+        .download-button:hover { transform: scale(1.05); }
+        .download-button.disabled { background-color: #555555; cursor: not-allowed; }
+        .error-text { color: #ff4d4d; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title" id="appTitle">Get The App</h1>
+        <p class="version-text" id="versionInfo">Loading latest version...</p>
+        <a href="#" id="downloadLink" class="download-button disabled">Download</a>
+    </div>
+
+    <!--
+      As you correctly pointed out, we must use the <script> tag method for a simple HTML page.
+      The "import" syntax is for more complex web projects. These script tags below are the correct way.
+    -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <script>
+        // ====================================================================
+        // THIS IS YOUR FINAL, CORRECT FIREBASE CONFIGURATION
+        // ====================================================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyA0UR_6r7y_mftZPluhLMJx3UaSU0BSkPo",
+            authDomain: "pc-residences.firebaseapp.com",
+            databaseURL: "https://pc-residences-default-rtdb.firebaseio.com",
+            projectId: "pc-residences",
+            storageBucket: "pc-residences.firebasestorage.app",
+            messagingSenderId: "709629473604",
+            appId: "1:709629473604:web:6dd8533b0680f65a02dd11",
+            measurementId: "G-6Z008HSZL7"
+        };
+        // ====================================================================
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // This function reads the "?app=flavorName" from the URL
+        const params = new URLSearchParams(window.location.search);
+        const appFlavor = params.get('app');
+
+        const downloadButton = document.getElementById('downloadLink');
+        const versionInfo = document.getElementById('versionInfo');
+        const appTitle = document.getElementById('appTitle');
+
+        if (appFlavor) {
+            // It builds the correct path to look for in Firebase, e.g., "app_updates/ddnIptv"
+            const updateRef = database.ref(`app_updates/${appFlavor}`);
+            updateRef.once('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data && data.apk_url && !data.apk_url.includes("PASTE_")) {
+                    appTitle.innerText = `Download ${appFlavor}`;
+                    versionInfo.innerText = `Version ${data.latest_version_name}`;
+                    downloadButton.href = data.apk_url;
+                    downloadButton.classList.remove('disabled');
+                } else {
+                    versionInfo.innerText = `Could not find a download link for this app.`;
+                    appTitle.innerText = 'Error';
+                }
+            });
+        } else {
+            versionInfo.innerHTML = `Please specify an app in the URL.<br>Example: ?app=ddnIptv`;
+            appTitle.innerText = 'No App Selected';
+        }
+    </script>
+</body>
+</html>
