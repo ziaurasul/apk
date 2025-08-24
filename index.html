@@ -59,8 +59,11 @@
             updateRef.once('value', (snapshot) => {
                 const data = snapshot.val();
                 mainTitle.innerText = `Download ${appFlavor}`;
-                if (data && data.apk_url) {
+                // ================== THE FIX IS HERE ==================
+                // The variable name is now correct: `latest_version_name`
+                if (data && data.apk_url && data.latest_version_name) {
                     mainSubtitle.innerText = `Version ${data.latest_version_name}`;
+                // =====================================================
                     buttonContainer.innerHTML = `<a href="${data.apk_url}" class="button">Download App</a>`;
                 } else {
                     mainSubtitle.innerText = `Could not find download link.`;
