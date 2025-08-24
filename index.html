@@ -3,78 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Download App</title>
+    <title>IPTV Service</title>
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #121212; color: #ffffff; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; text-align: center; padding: 20px; }
-        .container { background-color: #1E1E1E; padding: 40px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); max-width: 500px; }
+        .container { background-color: #1E1E1E; padding: 40px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); max-width: 500px; width: 90%;}
         .title { font-size: 2em; margin-bottom: 10px; }
-        .version-text { font-size: 1.2em; color: #AAAAAA; margin-bottom: 30px; }
-        .download-button { display: inline-block; background-color: #E50914; color: #ffffff; padding: 15px 30px; font-size: 1.5em; text-decoration: none; border-radius: 8px; font-weight: bold; transition: transform 0.2s; }
-        .download-button:hover { transform: scale(1.05); }
-        .download-button.disabled { background-color: #555555; cursor: not-allowed; }
-        .error-text { color: #ff4d4d; }
+        .subtitle { font-size: 1.2em; color: #AAAAAA; margin-bottom: 30px; }
+        .button { display: block; background-color: #E50914; color: #ffffff; padding: 15px 30px; margin-top: 15px; font-size: 1.5em; text-decoration: none; border-radius: 8px; font-weight: bold; transition: transform 0.2s; }
+        .button:hover { transform: scale(1.05); }
+        .button.disabled { background-color: #555555; cursor: not-allowed; }
+        .button.whatsapp { background-color: #25D366; }
+        .button.website { background-color: #4A90E2; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1 class="title" id="appTitle">Get The App</h1>
-        <p class="version-text" id="versionInfo">Loading latest version...</p>
-        <a href="#" id="downloadLink" class="download-button disabled">Download</a>
+    <div class="container" id="mainContainer" style="display: none;">
+        <!-- This content will be filled by JavaScript -->
+        <h1 class="title" id="mainTitle">Loading...</h1>
+        <p class="subtitle" id="mainSubtitle"></p>
+        <div id="buttonContainer"></div>
     </div>
 
-    <!--
-      As you correctly pointed out, we must use the <script> tag method for a simple HTML page.
-      The "import" syntax is for more complex web projects. These script tags below are the correct way.
-    -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <script>
-        // ====================================================================
-        // THIS IS YOUR FINAL, CORRECT FIREBASE CONFIGURATION
-        // ====================================================================
+        // PASTE YOUR FIREBASE CONFIG HERE
         const firebaseConfig = {
-            apiKey: "AIzaSyA0UR_6r7y_mftZPluhLMJx3UaSU0BSkPo",
-            authDomain: "pc-residences.firebaseapp.com",
-            databaseURL: "https://pc-residences-default-rtdb.firebaseio.com",
-            projectId: "pc-residences",
-            storageBucket: "pc-residences.firebasestorage.app",
-            messagingSenderId: "709629473604",
-            appId: "1:709629473604:web:6dd8533b0680f65a02dd11",
-            measurementId: "G-6Z008HSZL7"
+            apiKey: "AIza...",
+            authDomain: "your-project-id.firebaseapp.com",
+            databaseURL: "https://your-project-id-default-rtdb.firebaseio.com",
+            projectId: "your-project-id",
+            storageBucket: "your-project-id.appspot.com",
+            messagingSenderId: "...",
+            appId: "..."
         };
-        // ====================================================================
 
-        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        // This function reads the "?app=flavorName" from the URL
         const params = new URLSearchParams(window.location.search);
         const appFlavor = params.get('app');
+        const contactFlavor = params.get('contact');
 
-        const downloadButton = document.getElementById('downloadLink');
-        const versionInfo = document.getElementById('versionInfo');
-        const appTitle = document.getElementById('appTitle');
+        const mainContainer = document.getElementById('mainContainer');
+        const mainTitle = document.getElementById('mainTitle');
+        const mainSubtitle = document.getElementById('mainSubtitle');
+        const buttonContainer = document.getElementById('buttonContainer');
+        
+        mainContainer.style.display = 'block';
 
         if (appFlavor) {
-            // It builds the correct path to look for in Firebase, e.g., "app_updates/ddnIptv"
+            // --- Handle APP DOWNLOAD ---
             const updateRef = database.ref(`app_updates/${appFlavor}`);
             updateRef.once('value', (snapshot) => {
                 const data = snapshot.val();
-                if (data && data.apk_url && !data.apk_url.includes("PASTE_")) {
-                    appTitle.innerText = `Download ${appFlavor}`;
-                    versionInfo.innerText = `Version ${data.latest_version_name}`;
-                    downloadButton.href = data.apk_url;
-                    downloadButton.classList.remove('disabled');
+                mainTitle.innerText = `Download ${appFlavor}`;
+                if (data && data.apk_url) {
+                    mainSubtitle.innerText = `Version ${data.latest_version_name}`;
+                    buttonContainer.innerHTML = `<a href="${data.apk_url}" class="button">Download App</a>`;
                 } else {
-                    versionInfo.innerText = `Could not find a download link for this app.`;
-                    appTitle.innerText = 'Error';
+                    mainSubtitle.innerText = `Could not find download link.`;
                 }
             });
+
+        } else if (contactFlavor) {
+            // --- Handle CONTACT PAGE ---
+            const contactRef = database.ref(`app_links/contact_info/${contactFlavor}`);
+            contactRef.once('value', (snapshot) => {
+                const data = snapshot.val();
+                mainTitle.innerText = `Contact Support`;
+                mainSubtitle.innerText = `Get in touch for your premium subscription.`;
+                let buttonsHTML = '';
+                if (data.whatsapp) {
+                    buttonsHTML += `<a href="https://wa.me/${data.whatsapp}" class="button whatsapp">Contact on WhatsApp</a>`;
+                }
+                if (data.website) {
+                    buttonsHTML += `<a href="${data.website}" class="button website">Visit Website</a>`;
+                }
+                buttonContainer.innerHTML = buttonsHTML;
+            });
         } else {
-            versionInfo.innerHTML = `Please specify an app in the URL.<br>Example: ?app=ddnIptv`;
-            appTitle.innerText = 'No App Selected';
+            mainTitle.innerText = 'Welcome';
+            mainSubtitle.innerText = 'Please use a valid link to download or contact us.';
         }
     </script>
 </body>
